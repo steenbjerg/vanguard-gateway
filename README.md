@@ -1,8 +1,11 @@
 # vanguard-gateway
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+This project implements a simple api/http gateway that handles any http request going into my home installation:
+* It has some security checks to avoid intruders from breaking my current setup.
+* It handles any all http methods including SSE requests.
+* It is not designed to handle a million requests per seconds. It is tailored for small home setups.
 
-If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
+It is currently under developement.
 
 ## Running the application in dev mode
 
@@ -47,14 +50,4 @@ You can then execute your native executable with: `./build/vanguard-gateway-1.0.
 
 If you want to learn more about building native executables, please consult https://quarkus.io/guides/gradle-tooling.
 
-## Related Guides
 
-- RESTEasy Reactive ([guide](https://quarkus.io/guides/resteasy-reactive)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
-
-## Provided Code
-
-### RESTEasy Reactive
-
-Easily start your Reactive RESTful Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)

@@ -1,5 +1,6 @@
 package dk.stonemountain.vanguard;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -16,6 +17,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 
+import dk.stonemountain.vanguard.domain.RouteManager.Method;
 import dk.stonemountain.vanguard.domain.RouteManager.ServiceEndpoint;
 import dk.stonemountain.vanguard.domain.UrlHelper;
 import dk.stonemountain.vanguard.util.ApplicationException;
@@ -51,30 +53,35 @@ public class RequestInvoker {
             var request = reqBuilder.build();
             
             // Make invocation
-            HttpResponse<InputStream> response = null;
-            var startTime = LocalDateTime.now();
-            try {
-                requestLog.info("Invoking request at {}. Url: {}. Method: {}, Headers: {}", startTime, url, endpoint.method(), request.headers().map());                
-                response = HttpClient.newBuilder()
-                    .followRedirects(HttpClient.Redirect.NEVER)
-                    .connectTimeout(endpoint.connectionTimeout())
-                    .build()
-                    .send(request, BodyHandlers.ofInputStream());
-            } catch (Exception e) { // NOSONAR
-                var endTime = LocalDateTime.now();
-                requestLog.info("Invoked request completed at {}. Duration: {}. Failure: {}", endTime, Duration.between(endTime, startTime), e.getMessage());
-                throw e;
-            } finally {
-                var endTime = LocalDateTime.now();
-                if (response != null) {
-                    requestLog.info("Invoked request completed at {}. Duration: {}. Headers: {}", endTime, Duration.between(endTime, startTime), response.headers().map());
-                }
-            }
+            HttpResponse<InputStream> response = invoke(endpoint.method(), url, endpoint.connectionTimeout(), request);
             return response;
 
         } catch (Exception e) { // NOSONAR
             throw new RequestException(url, headers, e);
         }
+    }
+
+    private HttpResponse<InputStream> invoke(Method method, URI url, Duration readTimeout, HttpRequest request) throws InterruptedException, IOException {
+        HttpResponse<InputStream> response = null;
+        var startTime = LocalDateTime.now();
+        try {
+            requestLog.info("Invoking request at {}. Url: {}. Method: {}, Headers: {}", startTime, url, method, request.headers().map());                
+            response = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NEVER)
+                .connectTimeout(readTimeout)
+                .build()
+                .send(request, BodyHandlers.ofInputStream());
+        } catch (InterruptedException | IOException e) { // NOSONAR
+            var endTime = LocalDateTime.now();
+            requestLog.info("Invoked request completed at {}. Duration: {}. Failure: {}", endTime, Duration.between(endTime, startTime), e.getMessage());
+            throw e;
+        } finally {
+            var endTime = LocalDateTime.now();
+            if (response != null) {
+                requestLog.info("Invoked request completed at {}. Duration: {}. Headers: {}", endTime, Duration.between(endTime, startTime), response.headers().map());
+            }
+        }
+        return response;
     }
 
     public static class RequestException extends ApplicationException {
