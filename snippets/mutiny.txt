@@ -1,0 +1,35 @@
+	    				.subscribe()
+		    				.with(
+					    		resp -> {
+									LOG.trace("ID: {} - response: {}", rc.get("logid"), resp.statusCode());
+									rc.response().setStatusCode(resp.statusCode());
+									rc.response().setStatusMessage(resp.statusMessage());
+	//								rc.response().setChunked(true);
+									resp.headers().entries()
+										.stream()
+										.forEach(e -> {
+											rc.response().headers().add(e.getKey(), e.getValue());
+											LOG.trace("Added header {} = {}", e.getKey(), e.getValue());
+										});
+									LOG.trace("Headers returned: {}", rc.response().headers().entries());
+									if (resp.body() != null) {
+										rc.response().write(resp.body().getDelegate());
+									}
+							    	AUDIT.info("ID: {} Data Returned: Duration: {}, Method: {}, Host: {}, Uri: {}, Status: {}", rc.<String>get("logid"), Duration.between(rc.<LocalDateTime>get("startTime"), LocalDateTime.now()), rc.request().method(), rc.request().host(), rc.request().uri(), resp.statusCode());
+					    		},
+					    		
+					    		failure -> {
+									LOG.trace("ID: {} - failed: {}", rc.get("logid"), rc.request().uri(), failure.getMessage());
+									rc.response().setStatusCode(500);
+									rc.response().setStatusMessage(failure.getMessage());
+									rc.response().end();
+							    	AUDIT.info("ID: {} FAILURE: Duration: {}, Method: {}, Host: {}, Uri: {}, Message: {}", rc.<String>get("logid"), Duration.between(rc.<LocalDateTime>get("startTime"), LocalDateTime.now()), rc.request().method(), rc.request().host(), rc.request().uri(), failure.getMessage());
+					    		}
+					    		
+//					    		() -> {
+//									LOG.trace("ID: {} - completed: {}", rc.get("logid"), rc.request().uri());
+//									rc.response().end();				    			
+//							    	AUDIT.info("ID: {} Success: Duration: {}, Method: {}, Host: {}, Uri: {}, Status: {}", rc.<String>get("logid"), Duration.between(rc.<LocalDateTime>get("startTime"), LocalDateTime.now()), rc.request().method(), rc.request().host(), rc.request().uri());
+//	
+//					    		}
+		    				);
