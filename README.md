@@ -50,4 +50,9 @@ You can then execute your native executable with: `./build/vanguard-gateway-1.0.
 
 If you want to learn more about building native executables, please consult https://quarkus.io/guides/gradle-tooling.
 
+## Test
+### SSE
 
+```shell script
+/usr/lib/jvm/java-21-openjdk-amd64/bin/java -classpath build/classes/java/main dk.stonemountain.vanguard.Sse
+```

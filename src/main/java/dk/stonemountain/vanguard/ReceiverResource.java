@@ -1,7 +1,11 @@
 package dk.stonemountain.vanguard;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.http.HttpRequest.BodyPublishers;
+import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,7 +20,6 @@ import dk.stonemountain.vanguard.domain.RouteManager;
 import dk.stonemountain.vanguard.domain.RouteManager.Method;
 import dk.stonemountain.vanguard.domain.RouteManager.NoMatchingEndpoint;
 import dk.stonemountain.vanguard.domain.UrlHelper;
-import dk.stonemountain.vanguard.util.Log;
 import io.vertx.core.http.HttpServerRequest;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -28,6 +31,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 import jakarta.ws.rs.core.UriInfo;
 
 @Path("/")
@@ -67,10 +71,16 @@ public class ReceiverResource {
             // Invoke backend
             var response = requestHandler.invokeAndReturn(endpoint, url, backendHeaders, null);
 
-            // return response
+            log.info("Content-Type: {}", response.headers().map().get("content-type"));
+            var contentType = response.headers().map().get("content-type").getFirst();
+            var output = switch (contentType) {
+                case "text/event-stream" -> getSseStreamingOutput(response); 
+                default -> getDefaultStreamingOutput(response);
+            };
+
             var builder = Response
                 .status(response.statusCode())
-                .entity(response.body());
+                .entity(output);
 
             response.headers().map().entrySet().stream()
                 .filter(e -> respondHeader(e.getKey()))
@@ -95,8 +105,28 @@ public class ReceiverResource {
         }
     }
 
+    private StreamingOutput getDefaultStreamingOutput(HttpResponse<InputStream> response) {
+        return o -> response.body().transferTo(o);
+    }
+
+    private StreamingOutput getSseStreamingOutput(HttpResponse<InputStream> response) {
+        return o -> {
+            var out = new OutputStreamWriter(o);
+            try (var r = new BufferedReader(new InputStreamReader(response.body()))) {
+                String line;
+                while ((line = r.readLine()) != null) {
+                    out.write(line + "\n");
+                    out.flush();
+                }
+            }
+        };
+    }
+
     private Stream<Map.Entry<String, String>> headerValueStream(String key, List<String> values) {
-        return values.stream().collect(Collectors.toMap(v -> key, v -> v)).entrySet().stream();
+        return values.stream()
+            .collect(Collectors.toMap(v -> key, v -> v))
+            .entrySet()
+            .stream();
     }
 
     @POST
