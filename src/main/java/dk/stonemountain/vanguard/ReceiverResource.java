@@ -51,12 +51,32 @@ public class ReceiverResource {
     @Path("/{paths: .+}")
     @Produces(MediaType.MEDIA_TYPE_WILDCARD)
     public Response getRequest(@Context HttpHeaders headers, @Context HttpServerRequest incomingRequest, @Context UriInfo uriInfo) {
+        return handleRequest(Method.GET, headers, incomingRequest, uriInfo, null);
+    }
+
+    @POST
+    @Path("/{paths: .+}")
+    @Consumes(MediaType.MEDIA_TYPE_WILDCARD)
+    @Produces(MediaType.MEDIA_TYPE_WILDCARD)
+    public Response postRequest(@Context HttpHeaders headers, @Context HttpServerRequest incomingRequest, @Context UriInfo uriInfo, InputStream body) {
+        return handleRequest(Method.POST, headers, incomingRequest, uriInfo, body);
+    }
+
+    @DELETE
+    @Path("/{paths: .+}")
+    @Consumes(MediaType.MEDIA_TYPE_WILDCARD)
+    @Produces(MediaType.MEDIA_TYPE_WILDCARD)
+    public Response deleteRequest(@Context HttpHeaders headers, @Context HttpServerRequest incomingRequest, @Context UriInfo uriInfo, InputStream body) {
+        return handleRequest(Method.DELETE, headers, incomingRequest, uriInfo, body);
+    }
+
+    private Response handleRequest(Method method, HttpHeaders headers, HttpServerRequest incomingRequest, UriInfo uriInfo, InputStream body) {
         // Security check on input
         filterManager.preRequestFilter(incomingRequest, uriInfo);
 
         // Construct backend request
         var route = manager.find(uriInfo);
-        var endpoint = route.matchEndpoint(Method.GET, uriInfo);
+        var endpoint = route.matchEndpoint(method, uriInfo);
         var url = new UrlHelper().constructURL(route.service(), endpoint, uriInfo);
         var backendHeaders = headers.getRequestHeaders().entrySet()
             .stream()
@@ -67,7 +87,8 @@ public class ReceiverResource {
         filterManager.preInvokeBackendFilter(url, route, endpoint, incomingRequest);
 
         // Invoke backend
-        var response = requestHandler.invokeAndReturn(endpoint, url, backendHeaders, null);
+
+        var response = requestHandler.invokeAndReturn(endpoint, url, backendHeaders, BodyPublishers.ofInputStream(() -> body));
 
         // Find streaming output handler
         var contentType = response.headers().map().get("content-type").getFirst();
@@ -76,84 +97,10 @@ public class ReceiverResource {
             default -> getDefaultStreamingOutput(response);
         };
 
-        // Create response
+        // return response
         var builder = Response
             .status(response.statusCode())
             .entity(output);
-
-        response.headers().map().entrySet().stream()
-            .filter(e -> respondHeader(e.getKey()))
-            .flatMap(e -> headerValueStream(e.getKey(), e.getValue()))
-            .forEach(e -> builder.header(e.getKey(), e.getValue()));
-
-        return builder.build();
-    }
-
-    @POST
-    @Path("/{paths: .+}")
-    @Consumes(MediaType.MEDIA_TYPE_WILDCARD)
-    @Produces(MediaType.MEDIA_TYPE_WILDCARD)
-    public Response postRequest(@Context HttpHeaders headers, @Context HttpServerRequest incomingRequest, @Context UriInfo uriInfo, InputStream body) {
-        // Security check on input
-        filterManager.preRequestFilter(incomingRequest, uriInfo);
-
-        // Construct backend request
-        var route = manager.find(uriInfo);
-        var endpoint = route.matchEndpoint(Method.POST, uriInfo);
-        var url = new UrlHelper().constructURL(route.service(), endpoint, uriInfo);
-        var backendHeaders = headers.getRequestHeaders().entrySet()
-            .stream()
-            .filter(e -> forwardHeader(e.getKey()))
-            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-
-        // Security check route/endpoint
-        filterManager.preInvokeBackendFilter(url, route, endpoint, incomingRequest);
-
-        // Invoke backend
-
-        var response = requestHandler.invokeAndReturn(endpoint, url, backendHeaders, BodyPublishers.ofInputStream(() -> body));
-
-        // return response
-        var builder = Response
-            .status(response.statusCode())
-            .entity(response.body());
-
-        response.headers().map().entrySet().stream()
-            .filter(e -> respondHeader(e.getKey()))
-            .flatMap(e -> headerValueStream(e.getKey(), e.getValue()))
-            .forEach(e -> builder.header(e.getKey(), e.getValue()));
-
-        return builder.build();
-    }
-
-    @DELETE
-    @Path("/{paths: .+}")
-    @Consumes(MediaType.MEDIA_TYPE_WILDCARD)
-    @Produces(MediaType.MEDIA_TYPE_WILDCARD)
-    public Response deleteRequest(@Context HttpHeaders headers, @Context HttpServerRequest incomingRequest, @Context UriInfo uriInfo, InputStream body) {
-        // Security check on input
-        filterManager.preRequestFilter(incomingRequest, uriInfo);
-
-        // Construct backend request
-        var route = manager.find(uriInfo);
-        var endpoint = route.matchEndpoint(Method.DELETE, uriInfo);
-        var url = new UrlHelper().constructURL(route.service(), endpoint, uriInfo);
-        var backendHeaders = headers.getRequestHeaders().entrySet()
-            .stream()
-            .filter(e -> forwardHeader(e.getKey()))
-            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-
-        // Security check route/endpoint
-        filterManager.preInvokeBackendFilter(url, route, endpoint, incomingRequest);
-
-        // Invoke backend
-
-        var response = requestHandler.invokeAndReturn(endpoint, url, backendHeaders, BodyPublishers.ofInputStream(() -> body));
-
-        // return response
-        var builder = Response
-            .status(response.statusCode())
-            .entity(response.body());
 
         response.headers().map().entrySet().stream()
             .filter(e -> respondHeader(e.getKey()))

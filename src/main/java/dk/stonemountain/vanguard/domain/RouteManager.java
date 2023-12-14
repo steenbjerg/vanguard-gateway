@@ -28,7 +28,7 @@ public class RouteManager {
         public ServiceEndpoint matchEndpoint(Method method, UriInfo info) {
             return service.endpoints().stream()
                 .sorted((e1, e2) -> e1.uri.length() < e2.uri.length() ? 1 : 0)
-                .filter(e -> e.method() == method && info.getPath().startsWith(e.uri()))
+                .filter(e -> e.method() == method && (info.getPath().equals(e.uri()) || info.getPath().startsWith(e.uri() + "/")))
                 .findFirst()
                 .orElseThrow(() -> new NoMatchingEndpoint(info.getPath(), this));
         }
