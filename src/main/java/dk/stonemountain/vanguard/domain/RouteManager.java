@@ -21,7 +21,6 @@ public class RouteManager {
     }
     
     public static record ServiceEndpoint(String uri, Method method, boolean isSsl, boolean isSse, Duration connectionTimeout, Duration readTimeout) {}
-
     public static record Service(String host, int port, List<ServiceEndpoint> endpoints) {}
 
     public static record ServiceRoute(String domain, Service service) {
