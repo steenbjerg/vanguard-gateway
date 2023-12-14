@@ -2,6 +2,7 @@ package dk.stonemountain.vanguard;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
@@ -53,8 +54,7 @@ public class RequestInvoker {
             var request = reqBuilder.build();
             
             // Make invocation
-            HttpResponse<InputStream> response = invoke(endpoint.method(), url, endpoint.connectionTimeout(), request);
-            return response;
+            return invoke(endpoint.method(), url, endpoint.connectionTimeout(), request);
 
         } catch (Exception e) { // NOSONAR
             throw new RequestException(url, headers, e);
@@ -73,12 +73,16 @@ public class RequestInvoker {
                 .send(request, BodyHandlers.ofInputStream());
         } catch (InterruptedException | IOException e) { // NOSONAR
             var endTime = LocalDateTime.now();
-            requestLog.info("Invoked request completed at {}. Duration: {}. Failure: {}", endTime, Duration.between(endTime, startTime), e.getMessage());
+            requestLog.info("Invoked request completed at {}. Duration: {}. Failure: {} - {}", endTime, Duration.between(endTime, startTime), e.getClass().getName(), e.getMessage());
+            throw e;
+        } catch (Exception e) { // NOSONAR
+            var endTime = LocalDateTime.now();
+            requestLog.info("Invoked request completed at {}. Duration: {}. Failure: {} - {}", endTime, Duration.between(endTime, startTime), e.getClass().getName(), e.getMessage());
             throw e;
         } finally {
             var endTime = LocalDateTime.now();
             if (response != null) {
-                requestLog.info("Invoked request completed at {}. Duration: {}. Headers: {}", endTime, Duration.between(endTime, startTime), response.headers().map());
+                requestLog.info("Invoked request completed at {}. Duration: {}. Status: {}, Headers: {}", endTime, Duration.between(endTime, startTime), response.statusCode(), response.headers().map());
             }
         }
         return response;
