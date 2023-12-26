@@ -2,7 +2,7 @@ package dk.stonemountain.vanguard;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.ConnectException;
+import java.net.Socket;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
@@ -10,11 +10,21 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509ExtendedTrustManager;
 
 import org.slf4j.Logger;
 
@@ -29,6 +39,37 @@ import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class RequestInvoker {
+    private static final TrustManager TRUSTING_MANAGER = new X509ExtendedTrustManager() {
+        @Override
+        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+            return new java.security.cert.X509Certificate[0];
+        }
+
+        @Override
+        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] arg0, String arg1, Socket arg2) throws CertificateException {
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] arg0, String arg1, SSLEngine arg2) throws CertificateException {
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] arg0, String arg1, Socket arg2) throws CertificateException {
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] arg0, String arg1, SSLEngine arg2) throws CertificateException {
+        }
+    };
+
     @Inject
     @Log(LogType.REQUEST_LOG)
     Logger requestLog;
@@ -61,14 +102,17 @@ public class RequestInvoker {
         }
     }
 
-    private HttpResponse<InputStream> invoke(Method method, URI url, Duration readTimeout, HttpRequest request) throws InterruptedException, IOException {
+    private HttpResponse<InputStream> invoke(Method method, URI url, Duration readTimeout, HttpRequest request) throws InterruptedException, IOException, NoSuchAlgorithmException, KeyManagementException {
         HttpResponse<InputStream> response = null;
         var startTime = LocalDateTime.now();
         try {
             requestLog.info("Invoking request at {}. Url: {}. Method: {}, Headers: {}", startTime, url, method, request.headers().map());                
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, new TrustManager[]{TRUSTING_MANAGER}, new SecureRandom());
             response = HttpClient.newBuilder()
                 .followRedirects(HttpClient.Redirect.NEVER)
                 .connectTimeout(readTimeout)
+                .sslContext(sslContext)
                 .build()
                 .send(request, BodyHandlers.ofInputStream());
         } catch (InterruptedException | IOException e) { // NOSONAR

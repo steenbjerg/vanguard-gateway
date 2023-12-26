@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.URI;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.util.List;
@@ -16,6 +17,7 @@ import org.slf4j.Logger;
 
 import dk.stonemountain.vanguard.domain.FilterManager;
 import dk.stonemountain.vanguard.domain.RouteManager;
+import dk.stonemountain.vanguard.domain.RouteManager.Match;
 import dk.stonemountain.vanguard.domain.RouteManager.Method;
 import dk.stonemountain.vanguard.domain.UrlHelper;
 import io.vertx.core.http.HttpServerRequest;
@@ -24,6 +26,7 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
@@ -62,6 +65,14 @@ public class ReceiverResource {
         return handleRequest(Method.POST, headers, incomingRequest, uriInfo, body);
     }
 
+    @PUT
+    @Path("/{paths: .+}")
+    @Consumes(MediaType.MEDIA_TYPE_WILDCARD)
+    @Produces(MediaType.MEDIA_TYPE_WILDCARD)
+    public Response putRequest(@Context HttpHeaders headers, @Context HttpServerRequest incomingRequest, @Context UriInfo uriInfo, InputStream body) {
+        return handleRequest(Method.PUT, headers, incomingRequest, uriInfo, body);
+    }
+
     @DELETE
     @Path("/{paths: .+}")
     @Consumes(MediaType.MEDIA_TYPE_WILDCARD)
@@ -76,22 +87,27 @@ public class ReceiverResource {
 
         // Construct backend request
         var route = manager.find(uriInfo);
-        var endpoint = route.matchEndpoint(method, uriInfo);
-        var url = new UrlHelper().constructURL(route.service(), endpoint, uriInfo);
+        var match = route.matchEndpoint(method, uriInfo);
+        var url = new UrlHelper().constructURL(match.service(), match.endpoint(), uriInfo);
         var backendHeaders = headers.getRequestHeaders().entrySet()
             .stream()
-            .filter(e -> forwardHeader(e.getKey()))
+            .filter(e -> forwardHeader(e.getKey().toLowerCase()))
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+        backendHeaders.put("X-Forwarded-For", List.of(incomingRequest.remoteAddress().hostAddress()));
+        backendHeaders.put("X-Forwarded-Host", List.of(incomingRequest.authority().host()));
+        backendHeaders.put("X-Forwarded-Port", List.of(Integer.toString(incomingRequest.authority().port())));
+        backendHeaders.put("X-Forwarded-Proto", List.of(incomingRequest.scheme()));
 
         // Security check route/endpoint
-        filterManager.preInvokeBackendFilter(url, route, endpoint, incomingRequest);
+        filterManager.preInvokeBackendFilter(url, route, match.endpoint(), incomingRequest);
 
         // Invoke backend
 
-        var response = requestHandler.invokeAndReturn(endpoint, url, backendHeaders, BodyPublishers.ofInputStream(() -> body));
+        var response = requestHandler.invokeAndReturn(match.endpoint(), url, backendHeaders, BodyPublishers.ofInputStream(() -> body));
 
         // Find streaming output handler
-        var contentType = response.headers().map().get("content-type").getFirst();
+        var contentTypes = response.headers().map().get("content-type");
+        var contentType = contentTypes == null || contentTypes.isEmpty() ? "" : contentTypes.getFirst();
         var output = switch (contentType) {
             case "text/event-stream" -> getSseStreamingOutput(response); 
             default -> getDefaultStreamingOutput(response);
@@ -103,19 +119,40 @@ public class ReceiverResource {
             .entity(output);
 
         response.headers().map().entrySet().stream()
-            .filter(e -> respondHeader(e.getKey()))
+            .filter(e -> respondHeader(e.getKey().toLowerCase()))
             .flatMap(e -> headerValueStream(e.getKey(), e.getValue()))
+            .map(h -> redirectCheck(h, incomingRequest, response, match))
             .forEach(e -> builder.header(e.getKey(), e.getValue()));
 
         return builder.build();
     }
 
+    private Entry<String, String> redirectCheck(Entry<String, String> header, HttpServerRequest request, HttpResponse<InputStream> response, Match match) {
+        if (response.statusCode() >= 300 && response.statusCode() < 400 && "location".equalsIgnoreCase(header.getKey())) {
+            var location = header.getValue();
+            var backendHost = match.service().host();
+            var backendPort = match.service().port();
+
+            try {
+                var redirectUrl = new URI(location);
+                if (backendHost.equalsIgnoreCase(redirectUrl.getHost()) && backendPort == redirectUrl.getPort()) {
+                    var hostAndPort = request.authority();
+                    var redirectedUrl = new URI(request.scheme(), redirectUrl.getUserInfo(), hostAndPort.host(), hostAndPort.port(), redirectUrl.getPath(), redirectUrl.getQuery(), redirectUrl.getFragment());
+                    header.setValue(redirectedUrl.toString());
+                }
+            } catch (Exception e) {
+                log.error("Faild checking for redirect for header {} in url {}", header, location);
+            }
+        }
+        return header;
+    }
+
     private boolean forwardHeader(String header) {
         return switch (header) {
-            case "Postman-Token" -> false; 
-            case "Host" -> false;
-            case "Connection" -> false;
-            case "Content-Length" -> false;
+            case "postman-token" -> false; 
+            case "host" -> false;
+            case "connection" -> false;
+            case "content-length" -> false;
             case "x-quarkus-hot-deployment-done" -> false;
             default -> true;
         };

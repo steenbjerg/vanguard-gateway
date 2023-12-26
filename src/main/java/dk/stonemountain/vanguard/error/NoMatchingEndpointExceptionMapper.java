@@ -13,11 +13,11 @@ public class NoMatchingEndpointExceptionMapper  implements ExceptionMapper<NoMat
     public Response toResponse(NoMatchingEndpoint e) {
         return Response
             .status(Response.Status.NOT_FOUND)
-            .entity(new Message(e.getPath()))
+            .entity(new Message(e.getMessage(), e.getPath()))
             .type(MediaType.APPLICATION_JSON)
             .build();
     }
 
-    public static record Message(String path) {
+    public static record Message(String messageCause, String path) {
     }
 }

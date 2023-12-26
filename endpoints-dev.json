@@ -1,0 +1,98 @@
+[
+    {
+        "domain": "localhost",
+        "services": [
+            {
+                "host": "192.168.86.106",
+                "port": 8543,
+                "endpoints": [
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/admin"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/resources"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/realm"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "POST",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/realm"
+                    }
+                ]
+            },
+            {
+                "host": "192.168.86.106",
+                "port": 8543,
+                "endpoints": [
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/services/meter-measurements"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/services/access-rights"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/services/devices"
+                    }
+                ]
+            },
+            {
+                "host": "localhost",
+                "port": 8280,
+                "endpoints": [
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": false,
+                        "uri": "/tests"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "POST",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": false,
+                        "uri": "/tests"
+                    }
+                ]
+            }
+
+        ]
+    }
+]

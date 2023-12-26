@@ -1,0 +1,247 @@
+[
+    {
+        "domain": "auth.stonemountain.dk",
+        "services": [
+            {
+                "host": "192.168.86.106",
+                "port": 8543,
+                "endpoints": [
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/admin"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/resources"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/realms"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "POST",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/realms"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/favicon.ico"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "domain": "readings.stonemountain.dk",
+        "services": [
+            {
+                "host": "192.168.86.106",
+                "port": 8443,
+                "endpoints": [
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/services/meter-measurements"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/services/access-rights"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/services/devices"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "domain": "installables.stonemountain.dk",
+        "services": [
+            {
+                "host": "192.168.86.106",
+                "port": 8643,
+                "endpoints": [
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/services/installables"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "POST",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/services/installables"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "PUT",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/services/installables"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "DELETE",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/services/installables"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "domain": "stonemountain.dk",
+        "services": [
+            {
+                "host": "192.168.86.106",
+                "port": 8743,
+                "endpoints": [
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/packages"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "domain": "artifacts.stonemountain.dk",
+        "services": [
+            {
+                "host": "192.168.86.106",
+                "port": 8843,
+                "endpoints": [
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/packages"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "POST",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/packages"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/artifacts"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "domain": "information.stonemountain.dk",
+        "services": [
+            {
+                "host": "192.168.86.106",
+                "port": 8943,
+                "endpoints": [
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": true,
+                        "ssl": true,
+                        "uri": "/events/sse"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "domain": "power.stonemountain.dk",
+        "services": [
+            {
+                "host": "192.168.86.106",
+                "port": 9043,
+                "endpoints": [
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/prices"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "POST",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/settings"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/settings"
+                    }
+                ]
+            }
+        ]
+    }
+]
