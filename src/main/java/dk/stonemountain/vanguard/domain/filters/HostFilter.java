@@ -15,7 +15,7 @@ public class HostFilter implements PreRequestFilter {
             throw new SecurityCheckFailed("No host specified", request.method().name(), request.absoluteURI());
     	}
     	
-    	if (!(hostAndPort.host().endsWith("stonemountain.dk") || (hostAndPort.host().equals("localhost") && hostAndPort.port() == 8080))) {
+    	if (!(hostAndPort.host().endsWith("stonemountain.dk") || (hostAndPort.host().equals("localhost") && hostAndPort.port() == 9080))) {
             throw new SecurityCheckFailed("Not expected host name", request.method().name(), request.absoluteURI());
     	}
 

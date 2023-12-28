@@ -33,6 +33,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
 import jakarta.ws.rs.core.StreamingOutput;
 import jakarta.ws.rs.core.UriInfo;
 
@@ -118,18 +119,24 @@ public class ReceiverResource {
             .status(response.statusCode())
             .entity(output);
 
+        builder.replaceAll(null);
         response.headers().map().entrySet().stream()
             .filter(e -> respondHeader(e.getKey().toLowerCase()))
-            .flatMap(e -> headerValueStream(e.getKey(), e.getValue()))
-            .map(h -> redirectCheck(h, incomingRequest, response, match))
-            .forEach(e -> builder.header(e.getKey(), e.getValue()));
+            .map(e -> redirectCheck(e, incomingRequest, response, match))
+            .forEach(e -> addHeader(builder, e));
 
         return builder.build();
     }
 
-    private Entry<String, String> redirectCheck(Entry<String, String> header, HttpServerRequest request, HttpResponse<InputStream> response, Match match) {
+    private void addHeader(ResponseBuilder builder, Entry<String, List<String>> e) {
+        e.getValue().stream()
+            .peek(v -> log.info("Adding header {} with value {}", e.getKey(), v))
+            .forEach(v -> builder.header(e.getKey(), v));
+    }
+
+    private Entry<String, List<String>> redirectCheck(Entry<String, List<String>> header, HttpServerRequest request, HttpResponse<InputStream> response, Match match) {
         if (response.statusCode() >= 300 && response.statusCode() < 400 && "location".equalsIgnoreCase(header.getKey())) {
-            var location = header.getValue();
+            var location = !header.getValue().isEmpty() ? header.getValue().get(0) : "";
             var backendHost = match.service().host();
             var backendPort = match.service().port();
 
@@ -138,7 +145,7 @@ public class ReceiverResource {
                 if (backendHost.equalsIgnoreCase(redirectUrl.getHost()) && backendPort == redirectUrl.getPort()) {
                     var hostAndPort = request.authority();
                     var redirectedUrl = new URI(request.scheme(), redirectUrl.getUserInfo(), hostAndPort.host(), hostAndPort.port(), redirectUrl.getPath(), redirectUrl.getQuery(), redirectUrl.getFragment());
-                    header.setValue(redirectedUrl.toString());
+                    header.setValue(List.of(redirectedUrl.toString()));
                 }
             } catch (Exception e) {
                 log.error("Faild checking for redirect for header {} in url {}", header, location);
@@ -182,13 +189,4 @@ public class ReceiverResource {
             }
         };
     }
-
-    private Stream<Map.Entry<String, String>> headerValueStream(String key, List<String> values) {
-        return values.stream()
-            .collect(Collectors.toMap(v -> key, v -> v))
-            .entrySet()
-            .stream();
-    }
-
-
 }
