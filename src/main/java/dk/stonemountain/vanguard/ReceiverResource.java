@@ -92,10 +92,14 @@ public class ReceiverResource {
             .stream()
             .filter(e -> forwardHeader(e.getKey().toLowerCase()))
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+
+        var port = incomingRequest.authority().port() == -1 ? 443 : incomingRequest.authority().port();
         backendHeaders.put("X-Forwarded-For", List.of(incomingRequest.remoteAddress().hostAddress()));
         backendHeaders.put("X-Forwarded-Host", List.of(incomingRequest.authority().host()));
-        backendHeaders.put("X-Forwarded-Port", List.of(Integer.toString(incomingRequest.authority().port())));
+        backendHeaders.put("X-Forwarded-Port", List.of(Integer.toString(port)));
         backendHeaders.put("X-Forwarded-Proto", List.of(incomingRequest.scheme()));
+        // var forwardedValue = "for=" + incomingRequest.remoteAddress().hostAddress() + ":" + port + ";proto=" + incomingRequest.scheme() + ";host=" + incomingRequest.authority().host();
+        // backendHeaders.put("Forwarded", List.of(forwardedValue));
 
         // Security check route/endpoint
         filterManager.preInvokeBackendFilter(url, route, match.endpoint(), incomingRequest);
@@ -128,7 +132,6 @@ public class ReceiverResource {
 
     private void addHeader(ResponseBuilder builder, Entry<String, List<String>> e) {
         e.getValue().stream()
-            .peek(v -> log.info("Adding header {} with value {}", e.getKey(), v))
             .forEach(v -> builder.header(e.getKey(), v));
     }
 

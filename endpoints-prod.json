@@ -12,7 +12,23 @@
                         "readTimeout": "PT5S",
                         "sse": false,
                         "ssl": true,
-                        "uri": "/"
+                        "uri": "/admin"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/resources"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/realms"
                     },
                     {
                         "connectionTimeout": "PT2S",
@@ -20,7 +36,66 @@
                         "readTimeout": "PT5S",
                         "sse": false,
                         "ssl": true,
-                        "uri": "/"
+                        "uri": "/realms"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/favicon.ico"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "domain": "mars",
+        "services": [
+            {
+                "host": "192.168.86.106",
+                "port": 8543,
+                "endpoints": [
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/admin"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/resources"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/realms"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "POST",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/realms"
+                    },
+                    {
+                        "connectionTimeout": "PT2S",
+                        "method": "GET",
+                        "readTimeout": "PT5S",
+                        "sse": false,
+                        "ssl": true,
+                        "uri": "/favicon.ico"
                     }
                 ]
             }
@@ -36,14 +111,6 @@
                     {
                         "connectionTimeout": "PT2S",
                         "method": "GET",
-                        "readTimeout": "PT5S",
-                        "sse": false,
-                        "ssl": true,
-                        "uri": "/services/meter-measurements"
-                    },
-                    {
-                        "connectionTimeout": "PT2S",
-                        "method": "POST",
                         "readTimeout": "PT5S",
                         "sse": false,
                         "ssl": true,

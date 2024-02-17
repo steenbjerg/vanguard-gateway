@@ -1,10 +1,10 @@
 [
     {
-        "domain": "localhost",
+        "domain": "my-keycloak.org",
         "services": [
             {
                 "host": "localhost",
-                "port": 8443,
+                "port": 8543,
                 "endpoints": [
                     {
                         "connectionTimeout": "PT2S",
@@ -41,5 +41,50 @@
                 ]
             }
         ]
-   }
+   },
+
+   {
+    "domain": "admin.my-keycloak.org",
+    "services": [
+        {
+            "host": "localhost",
+            "port": 8543,
+            "endpoints": [
+                {
+                    "connectionTimeout": "PT2S",
+                    "method": "GET",
+                    "readTimeout": "PT5S",
+                    "sse": false,
+                    "ssl": true,
+                    "uri": "/"
+                },
+                {
+                    "connectionTimeout": "PT2S",
+                    "method": "POST",
+                    "readTimeout": "PT5S",
+                    "sse": false,
+                    "ssl": true,
+                    "uri": "/"
+                },
+                {
+                    "connectionTimeout": "PT2S",
+                    "method": "PUT",
+                    "readTimeout": "PT5S",
+                    "sse": false,
+                    "ssl": true,
+                    "uri": "/"
+                },
+                {
+                    "connectionTimeout": "PT2S",
+                    "method": "DELETE",
+                    "readTimeout": "PT5S",
+                    "sse": false,
+                    "ssl": true,
+                    "uri": "/"
+                }
+            ]
+        }
+    ]
+}   
+
 ]

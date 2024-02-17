@@ -15,7 +15,7 @@ public class HostFilter implements PreRequestFilter {
             throw new SecurityCheckFailed("No host specified", request.method().name(), request.absoluteURI());
     	}
     	
-    	if (!(hostAndPort.host().endsWith("stonemountain.dk") || (hostAndPort.host().equals("localhost") && hostAndPort.port() == 9080))) {
+    	if (!(hostAndPort.host().endsWith("admin.my-keycloak.org") || hostAndPort.host().endsWith("my-keycloak.org") || hostAndPort.host().endsWith("stonemountain.dk") || (hostAndPort.host().equals("localhost") && hostAndPort.port() == 9443) || (hostAndPort.host().equals("mars") && hostAndPort.port() == 9443))) {
             throw new SecurityCheckFailed("Not expected host name", request.method().name(), request.absoluteURI());
     	}
 
@@ -25,7 +25,7 @@ public class HostFilter implements PreRequestFilter {
     			if (!(info.getPath().startsWith("/realms/house") || info.getPath().startsWith("/realms/demo") || info.getPath().startsWith("/resources/"))) {
                     throw new SecurityCheckFailed("Not expected call to authentication server", request.method().name(), request.absoluteURI());
     			}
-    		}    		
+    		}
     	}
     }
 }

@@ -7,6 +7,20 @@ This project implements a simple api/http gateway that handles any http request 
 
 It is currently under developement.
 
+## Testing keycloak
+
+setup keycloak and the hosts file
+
+bin/kc.[sh|bat] start --proxy=reencrypt --https-port=8543 --hostname-url=https://my-keycloak.org:8443 --hostname-admin-url=https://admin.my-keycloak.org:8443
+
+proxy=reencrypt
+https-port=8543
+hostname-url=https://my-keycloak.org:8443
+hostname-admin-url=https://admin.my-keycloak.org:8443
+#hostname-strict=false
+
+
+
 ## Running the application in dev mode
 
 You can run your application in dev mode that enables live coding using:

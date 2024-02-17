@@ -27,6 +27,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509ExtendedTrustManager;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import dk.stonemountain.vanguard.domain.RouteManager.Method;
 import dk.stonemountain.vanguard.domain.RouteManager.ServiceEndpoint;
@@ -39,6 +40,8 @@ import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class RequestInvoker {
+    private static final Logger log = LoggerFactory.getLogger(RequestInvoker.class);
+
     private static final TrustManager TRUSTING_MANAGER = new X509ExtendedTrustManager() {
         @Override
         public java.security.cert.X509Certificate[] getAcceptedIssuers() {

@@ -1,10 +1,11 @@
-[
+2024-02-15 20:39:06 INFO  [dk.stonemountain.vanguard.domain.RouteInitialization] (main) The application is starting...
+2024-02-15 20:39:06 INFO  [dk.stonemountain.vanguard.domain.RouteInitialization] (main) Current folder: /home/steenbjerg/workspaces/vanguard/vanguard-gateway/., Routes file ./endpoints.json exists: true
+2024-02-15 20:39:06 INFO  [dk.stonemountain.vanguard.domain.RouteInitialization] (main) Initializing routes: ./endpoints.json
+2024-02-15 20:39:07 INFO  [dk.stonemountain.vanguard.domain.RouteManager] (main) Json: [
     {
         "domain": "auth.stonemountain.dk",
         "services": [
             {
-                "host": "192.168.86.106",
-                "port": 8543,
                 "endpoints": [
                     {
                         "connectionTimeout": "PT2S",
@@ -22,7 +23,9 @@
                         "ssl": true,
                         "uri": "/"
                     }
-                ]
+                ],
+                "host": "192.168.86.106",
+                "port": 8543
             }
         ]
     },
@@ -30,8 +33,6 @@
         "domain": "readings.stonemountain.dk",
         "services": [
             {
-                "host": "192.168.86.106",
-                "port": 8443,
                 "endpoints": [
                     {
                         "connectionTimeout": "PT2S",
@@ -65,7 +66,9 @@
                         "ssl": true,
                         "uri": "/services/devices"
                     }
-                ]
+                ],
+                "host": "192.168.86.106",
+                "port": 8443
             }
         ]
     },
@@ -73,8 +76,6 @@
         "domain": "installables.stonemountain.dk",
         "services": [
             {
-                "host": "192.168.86.106",
-                "port": 8643,
                 "endpoints": [
                     {
                         "connectionTimeout": "PT2S",
@@ -108,7 +109,9 @@
                         "ssl": true,
                         "uri": "/services/installables"
                     }
-                ]
+                ],
+                "host": "192.168.86.106",
+                "port": 8643
             }
         ]
     },
@@ -116,8 +119,6 @@
         "domain": "stonemountain.dk",
         "services": [
             {
-                "host": "192.168.86.106",
-                "port": 8743,
                 "endpoints": [
                     {
                         "connectionTimeout": "PT2S",
@@ -135,7 +136,9 @@
                         "ssl": true,
                         "uri": "/"
                     }
-                ]
+                ],
+                "host": "192.168.86.106",
+                "port": 8743
             }
         ]
     },
@@ -143,8 +146,6 @@
         "domain": "artifacts.stonemountain.dk",
         "services": [
             {
-                "host": "192.168.86.106",
-                "port": 8843,
                 "endpoints": [
                     {
                         "connectionTimeout": "PT2S",
@@ -170,7 +171,9 @@
                         "ssl": true,
                         "uri": "/artifacts"
                     }
-                ]
+                ],
+                "host": "192.168.86.106",
+                "port": 8843
             }
         ]
     },
@@ -178,8 +181,6 @@
         "domain": "information.stonemountain.dk",
         "services": [
             {
-                "host": "192.168.86.106",
-                "port": 8943,
                 "endpoints": [
                     {
                         "connectionTimeout": "PT2S",
@@ -189,7 +190,9 @@
                         "ssl": true,
                         "uri": "/events/sse"
                     }
-                ]
+                ],
+                "host": "192.168.86.106",
+                "port": 8943
             }
         ]
     },
@@ -197,8 +200,6 @@
         "domain": "power.stonemountain.dk",
         "services": [
             {
-                "host": "192.168.86.106",
-                "port": 9043,
                 "endpoints": [
                     {
                         "connectionTimeout": "PT2S",
@@ -224,8 +225,38 @@
                         "ssl": true,
                         "uri": "/settings"
                     }
-                ]
+                ],
+                "host": "192.168.86.106",
+                "port": 9043
             }
         ]
     }
 ]
+2024-02-15 20:39:07 INFO  [dk.stonemountain.vanguard.domain.RouteInitialization] (main) The application is stopping... Standard shutdown: true
+2024-02-15 20:39:07 ERROR [io.quarkus.runtime.Application] (main) Failed to start application (with profile [prod]): java.lang.RuntimeException: Failed to start quarkus
+	at io.quarkus.runner.ApplicationImpl.doStart(Unknown Source)
+	at io.quarkus.runtime.Application.start(Application.java:101)
+	at io.quarkus.runtime.ApplicationLifecycleManager.run(ApplicationLifecycleManager.java:111)
+	at io.quarkus.runtime.Quarkus.run(Quarkus.java:71)
+	at io.quarkus.runtime.Quarkus.run(Quarkus.java:44)
+	at io.quarkus.runtime.Quarkus.run(Quarkus.java:124)
+	at io.quarkus.runner.GeneratedMain.main(Unknown Source)
+Caused by: java.nio.file.NoSuchFileException: /home/pi/house-services/stonemountain.jks
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:379)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:431)
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:420)
+	at java.base/java.nio.file.Files.newInputStream(Files.java:159)
+	at io.quarkus.vertx.http.runtime.options.HttpServerOptionsUtils.getFileContent(HttpServerOptionsUtils.java:378)
+	at io.quarkus.vertx.http.runtime.options.HttpServerOptionsUtils.createKeyStoreOptions(HttpServerOptionsUtils.java:358)
+	at io.quarkus.vertx.http.runtime.options.HttpServerOptionsUtils.createSslOptions(HttpServerOptionsUtils.java:88)
+	at io.quarkus.vertx.http.runtime.VertxHttpRecorder.initializeMainHttpServer(VertxHttpRecorder.java:666)
+	at io.quarkus.vertx.http.runtime.VertxHttpRecorder.doServerStart(VertxHttpRecorder.java:755)
+	at io.quarkus.vertx.http.runtime.VertxHttpRecorder.startServer(VertxHttpRecorder.java:327)
+	at io.quarkus.deployment.steps.VertxHttpProcessor$openSocket189362710.deploy_0(Unknown Source)
+	at io.quarkus.deployment.steps.VertxHttpProcessor$openSocket189362710.deploy(Unknown Source)
+	... 7 more
+

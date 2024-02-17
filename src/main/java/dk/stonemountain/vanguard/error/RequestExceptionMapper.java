@@ -4,7 +4,6 @@ import java.net.ConnectException;
 import java.net.http.HttpTimeoutException;
 
 import dk.stonemountain.vanguard.RequestInvoker.RequestException;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
@@ -16,8 +15,8 @@ public class RequestExceptionMapper implements ExceptionMapper<RequestException>
     public Response toResponse(RequestException e) {
         return Response
             .status(getStatus(e))
-            .entity(new Message(e.getUrl() != null ? e.getUrl().toString() : "", e.getCause() != null ? e.getCause().getClass().getName() : "", e.getMessage() != null ? e.getMessage() : ""))
-            .type(MediaType.APPLICATION_JSON)
+            // .entity(new Message(e.getUrl() != null ? e.getUrl().toString() : "", e.getCause() != null ? e.getCause().getClass().getName() : "", e.getMessage() != null ? e.getMessage() : ""))
+            // .type(MediaType.APPLICATION_JSON)
             .build();
     }
 
@@ -27,7 +26,7 @@ public class RequestExceptionMapper implements ExceptionMapper<RequestException>
     protected Response.Status getStatus(RequestException e) {
         return switch(e.getCause()) {
             case null -> Response.Status.INTERNAL_SERVER_ERROR;
-            case ConnectException exp -> Response.Status.SERVICE_UNAVAILABLE;
+            case ConnectException exp -> Response.Status.NOT_FOUND;
             case HttpTimeoutException exp -> Response.Status.GATEWAY_TIMEOUT;
             default -> Response.Status.INTERNAL_SERVER_ERROR;
         };

@@ -28,23 +28,26 @@ public class LoggingFilter implements ContainerRequestFilter, ContainerResponseF
 
     @Override
     public void filter(ContainerRequestContext ctx) throws IOException {
-        var id = UUID.randomUUID().toString();
-        ctx.setProperty(UNIQUE_REQUEST_ID_KEY, id);
-        ctx.setProperty(UNIQUE_REQUEST_TIMESTAMP_KEY, LocalDateTime.now());
-        MDC.put(UNIQUE_REQUEST_ID_KEY, id);
-
-        requestLog.info("Request at {}. Url: {} Method: {}, Headers: {}", LocalDateTime.now(), ctx.getUriInfo().getRequestUri(), ctx.getMethod(), ctx.getHeaders().entrySet());
+        try {
+            var id = UUID.randomUUID().toString();
+            ctx.setProperty(UNIQUE_REQUEST_ID_KEY, id);
+            ctx.setProperty(UNIQUE_REQUEST_TIMESTAMP_KEY, LocalDateTime.now());
+            MDC.put(UNIQUE_REQUEST_ID_KEY, id);
+    
+            requestLog.info("Request at {}. Url: {} Method: {}, Headers: {}", LocalDateTime.now(), ctx.getUriInfo().getRequestUri(), ctx.getMethod(), ctx.getHeaders().entrySet());
+        } catch (Exception e) {
+            requestLog.error("failed", e);
+        }
     }
 
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
         var time = requestContext.getProperty(UNIQUE_REQUEST_TIMESTAMP_KEY);
         var startTime = time instanceof LocalDateTime ? (LocalDateTime) time : null;
-
-        requestLog.info("Request completed at {} with status {}. Duration: {}, Headers: {}", LocalDateTime.now(), responseContext.getStatus(), Duration.between(LocalDateTime.now(), startTime), responseContext.getHeaders().entrySet());
+        var elapsedTime = startTime != null ? Duration.between(LocalDateTime.now(), startTime) : null;
+        requestLog.info("Request ({}) completed at {} with status {}. Duration: {}, Headers: {}", requestContext.getUriInfo().getRequestUri(), LocalDateTime.now(), responseContext.getStatus(), elapsedTime, responseContext.getHeaders().entrySet());
 
         MDC.remove(UNIQUE_REQUEST_ID_KEY);
         requestContext.removeProperty(UNIQUE_REQUEST_ID_KEY);
     }
-
 }
