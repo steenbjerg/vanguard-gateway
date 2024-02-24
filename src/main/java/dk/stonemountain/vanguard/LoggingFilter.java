@@ -19,11 +19,11 @@ import jakarta.ws.rs.ext.Provider;
 
 @Provider
 public class LoggingFilter implements ContainerRequestFilter, ContainerResponseFilter {
-    private static final String UNIQUE_REQUEST_ID_KEY = "REQUEST_ID";
+    public static final String UNIQUE_REQUEST_ID_KEY = "REQUEST_ID";
     private static final String UNIQUE_REQUEST_TIMESTAMP_KEY = "REQUEST_TIMESTAMP";
 
     @Inject
-    @Log(LogType.REQUEST_LOG)
+    @Log(LogType.REQUEST)
     Logger requestLog;
 
     @Override
@@ -34,20 +34,25 @@ public class LoggingFilter implements ContainerRequestFilter, ContainerResponseF
             ctx.setProperty(UNIQUE_REQUEST_TIMESTAMP_KEY, LocalDateTime.now());
             MDC.put(UNIQUE_REQUEST_ID_KEY, id);
     
-            requestLog.info("Request at {}. Url: {} Method: {}, Headers: {}", LocalDateTime.now(), ctx.getUriInfo().getRequestUri(), ctx.getMethod(), ctx.getHeaders().entrySet());
+            requestLog.info("Request with id {} at {}. Url: {} Method: {}, Headers: {}n e) {", MDC.get(UNIQUE_REQUEST_ID_KEY), LocalDateTime.now(), ctx.getUriInfo().getRequestUri(), ctx.getMethod(), ctx.getHeaders().entrySet());
         } catch (Exception e) {
-            requestLog.error("failed", e);
+            requestLog.error("request failed", e);
         }
     }
 
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-        var time = requestContext.getProperty(UNIQUE_REQUEST_TIMESTAMP_KEY);
-        var startTime = time instanceof LocalDateTime ? (LocalDateTime) time : null;
-        var elapsedTime = startTime != null ? Duration.between(LocalDateTime.now(), startTime) : null;
-        requestLog.info("Request ({}) completed at {} with status {}. Duration: {}, Headers: {}", requestContext.getUriInfo().getRequestUri(), LocalDateTime.now(), responseContext.getStatus(), elapsedTime, responseContext.getHeaders().entrySet());
-
-        MDC.remove(UNIQUE_REQUEST_ID_KEY);
-        requestContext.removeProperty(UNIQUE_REQUEST_ID_KEY);
+        try {
+            var time = requestContext.getProperty(UNIQUE_REQUEST_TIMESTAMP_KEY);
+            var startTime = time instanceof LocalDateTime ? (LocalDateTime) time : null;
+            var elapsedTime = startTime != null ? Duration.between(LocalDateTime.now(), startTime) : null;
+            var url = requestContext.getUriInfo().getAbsolutePath();
+            requestLog.info("Request with id {} to url {} ({}) completed at {} with status {}. Duration: {}, Request Headers: {}, Response Headers: {}", MDC.get(UNIQUE_REQUEST_ID_KEY), url, requestContext.getMethod(), LocalDateTime.now(), responseContext.getStatus(), elapsedTime, requestContext.getHeaders(), responseContext.getHeaders().entrySet());
+    
+            MDC.remove(UNIQUE_REQUEST_ID_KEY);
+            requestContext.removeProperty(UNIQUE_REQUEST_ID_KEY);
+        } catch (Exception e) {
+            requestLog.error("request failed", e);
+        }
     }
 }

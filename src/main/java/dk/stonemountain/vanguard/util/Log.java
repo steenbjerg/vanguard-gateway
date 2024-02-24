@@ -14,7 +14,7 @@ import jakarta.inject.Qualifier;
 @Target({FIELD, METHOD, TYPE})
 public @interface Log {
     public enum LogType {
-        APPLICATION_LOG, REQUEST_LOG;
+        APPLICATION, REQUEST, BACKEND;
     }
 
     LogType value(); 

@@ -28,6 +28,7 @@ import javax.net.ssl.X509ExtendedTrustManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import dk.stonemountain.vanguard.domain.RouteManager.Method;
 import dk.stonemountain.vanguard.domain.RouteManager.ServiceEndpoint;
@@ -74,8 +75,8 @@ public class RequestInvoker {
     };
 
     @Inject
-    @Log(LogType.REQUEST_LOG)
-    Logger requestLog;
+    @Log(LogType.BACKEND)
+    Logger backendLog;
 
     public HttpResponse<InputStream> invokeAndReturn(ServiceEndpoint endpoint, URI url, Map<String, List<String>> headers, BodyPublisher bodyPublisher) {
         try {
@@ -109,7 +110,7 @@ public class RequestInvoker {
         HttpResponse<InputStream> response = null;
         var startTime = LocalDateTime.now();
         try {
-            requestLog.info("Invoking request at {}. Url: {}. Method: {}, Headers: {}", startTime, url, method, request.headers().map());                
+            backendLog.info("Request with id {}. Invoking request at {}. Url: {}. Method: {}, Headers: {}", MDC.get(LoggingFilter.UNIQUE_REQUEST_ID_KEY), startTime, url, method, request.headers().map());                
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, new TrustManager[]{TRUSTING_MANAGER}, new SecureRandom());
             response = HttpClient.newBuilder()
@@ -120,16 +121,16 @@ public class RequestInvoker {
                 .send(request, BodyHandlers.ofInputStream());
         } catch (InterruptedException | IOException e) { // NOSONAR
             var endTime = LocalDateTime.now();
-            requestLog.info("Invoked request completed at {}. Duration: {}. Failure: {} - {}", endTime, Duration.between(endTime, startTime), e.getClass().getName(), e.getMessage());
+            backendLog.info("Request with id {}. Invoked request completed at {}. Duration: {}. Failure: {} - {}", MDC.get(LoggingFilter.UNIQUE_REQUEST_ID_KEY), endTime, Duration.between(endTime, startTime), e.getClass().getName(), e.getMessage());
             throw e;
         } catch (Exception e) { // NOSONAR
             var endTime = LocalDateTime.now();
-            requestLog.info("Invoked request completed at {}. Duration: {}. Failure: {} - {}", endTime, Duration.between(endTime, startTime), e.getClass().getName(), e.getMessage());
+            backendLog.info("Request with id {}. Invoked request completed at {}. Duration: {}. Failure: {} - {}", MDC.get(LoggingFilter.UNIQUE_REQUEST_ID_KEY), endTime, Duration.between(endTime, startTime), e.getClass().getName(), e.getMessage());
             throw e;
         } finally {
             var endTime = LocalDateTime.now();
             if (response != null) {
-                requestLog.info("Invoked request completed at {}. Duration: {}. Status: {}, Headers: {}", endTime, Duration.between(endTime, startTime), response.statusCode(), response.headers().map());
+                backendLog.info("Request with id {}. Invoked request completed at {}. Duration: {}. Status: {}, Headers: {}", MDC.get(LoggingFilter.UNIQUE_REQUEST_ID_KEY), endTime, Duration.between(endTime, startTime), response.statusCode(), response.headers().map());
             }
         }
         return response;

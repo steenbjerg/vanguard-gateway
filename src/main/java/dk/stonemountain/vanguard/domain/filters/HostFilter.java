@@ -21,7 +21,7 @@ public class HostFilter implements PreRequestFilter {
 
         if (hostAndPort.host().equals("auth.stonemountain.dk")) {
             var remote = request.remoteAddress();
-    		if (!("192.168.86.1".equals(remote.hostAddress())) && (!"188.114.172.95".equals(remote.hostAddress())) && (!"testwifi.here".equals(remote.hostAddress()))) {
+    		if (!"192.168.86.1".equals(remote.hostAddress()) && !"188.114.172.95".equals(remote.hostAddress()) && !"testwifi.here".equals(remote.hostAddress())) {
     			if (!(info.getPath().startsWith("/realms/house") || info.getPath().startsWith("/realms/demo") || info.getPath().startsWith("/resources/"))) {
                     throw new SecurityCheckFailed("Not expected call to authentication server", request.method().name(), request.absoluteURI());
     			}

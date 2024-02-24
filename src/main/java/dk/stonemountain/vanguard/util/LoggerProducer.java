@@ -9,13 +9,19 @@ import jakarta.enterprise.inject.spi.InjectionPoint;
 
 public class LoggerProducer {
     @Produces
-    @Log(LogType.REQUEST_LOG) 
+    @Log(LogType.REQUEST) 
     public Logger createRequestLog(InjectionPoint ip) {
         return LoggerFactory.getLogger("REQUEST");
     }
-    
+
     @Produces
-    @Log(LogType.APPLICATION_LOG) 
+    @Log(LogType.BACKEND)
+    public Logger createBackendLog(InjectionPoint ip) {
+        return LoggerFactory.getLogger("BACKEND");
+    }
+
+    @Produces
+    @Log(LogType.APPLICATION) 
     public Logger createApplicationLog(InjectionPoint ip) {
         return LoggerFactory.getLogger(ip.getBean().getBeanClass());
     }
